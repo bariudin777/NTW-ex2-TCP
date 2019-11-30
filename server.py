@@ -41,14 +41,16 @@ class Manager:
         else:
             to_search = str(data[1:])
             for i in self.dict:
-                if search(to_search, str(i)):  # TODO  - don't work!!!!!!
+                if "" in to_search:
+                    to_search = to_search[1:]
+                if to_search in i:  # TODO  - don't work!!!!!!
                     msg = str(i) + str(self.dict[i])
-                    socket.send(msg)
+                    socket.send(msg.encode())
 
 
 if __name__ == "__main__":
     server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    server_ip = "10.0.0.2"
+    server_ip = "10.0.0.18"
     server_port = 8000
     server.bind((server_ip, server_port))
     server.listen(5)
