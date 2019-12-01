@@ -9,7 +9,7 @@ SEARCH_PATTERN = "^2\s[\s0-9\sa-zA-Z_.,-=)(]+$"
 Class Name: Handler
 Args type: data, socket, set_val
 Return Val: None
-Info:
+Info: Handel's Clients data
 '''
 
 
@@ -20,10 +20,10 @@ class Handler:
         self.set_val = set_val
 
     '''
-    Name:
-    Args type: 
-    Return Val:
-    Info:
+    Name: manage 
+    Args type: None
+    Return Val: None
+    Info: Manage client's input- registration and search 
     '''
 
     def manage(self):
@@ -35,10 +35,10 @@ class Handler:
 
 
 '''
-Name:
-Args type: 
-Return Val:
-Info:
+Class Name: Manager
+Args type: Client address
+Return Val: None
+Info: Manage Clients Info- what files he posses
 '''
 
 
@@ -49,20 +49,20 @@ class Manager:
         self.addr = client_addr
 
     '''
-    Name:
-    Args type: 
-    Return Val:
-    Info:
+    Name: set
+    Args type: key, value
+    Return Val: None
+    Info: Sets the dictionary
     '''
 
     def set(self, key, value):
         self.dict[key] = value
 
     '''
-    Name:
-    Args type: 
-    Return Val:
-    Info:
+    Name: process
+    Args type: data
+    Return Val: None
+    Info: Split and Parse the data for the dictionary
     '''
 
     def process(self, data):
@@ -73,15 +73,15 @@ class Manager:
             self.set(list_of_keys[i], value)
 
     '''
-    Name:
-    Args type: 
-    Return Val:
-    Info:
+    Name: search
+    Args type: data , socket
+    Return Val: None
+    Info: Searches files name or sub-string of files name and send it 
     '''
 
     def search(self, data, socket):
         if self.dict is None:
-            print("There is no files")
+            print("The word: " + str(data) + " don't exists - there is no such file name ")
         else:
             to_search = str(data[2:])
             msg = ""
@@ -93,8 +93,8 @@ class Manager:
 
 
 '''
-Name:
-Args type: 
+Name: Main
+Args type:
 Return Val:
 Info:
 '''
