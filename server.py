@@ -1,5 +1,6 @@
 import socket
 from re import search
+from socket import *
 import re
 
 INSERT_PATTERN = "^1\s[\s0-9\s]*\s[a-zA-Z_.,-;]+$"
@@ -66,7 +67,8 @@ class Manager:
     '''
 
     def process(self, data):
-        value = str(self.addr[0]) + " " + str(self.addr[1])
+        parse = str(data).split()
+        value = str(self.addr[0]) + " " + parse[1]
         to_split = data[7:]
         list_of_keys = str(to_split).split(",")
         for i in range(len(list_of_keys)):
@@ -99,7 +101,7 @@ Return Val:
 Info:
 '''
 if __name__ == "__main__":
-    server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    server = socket(AF_INET, SOCK_STREAM)
     server_ip = "192.168.43.43"
     server_port = 8000
     server.bind((server_ip, server_port))
