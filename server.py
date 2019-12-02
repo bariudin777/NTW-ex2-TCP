@@ -1,10 +1,11 @@
 import socket
+import sys
 from re import search
 from socket import *
 import re
 
-INSERT_PATTERN = "^1\s[\s0-9\s]*\s[a-zA-Z_.,-;]+$"
-SEARCH_PATTERN = "^2\s[\s0-9\sa-zA-Z_.,-=)(]+$"
+INSERT_PATTERN = "^1\s[\s0-9\s]*\s[a-zA-Z_.,-;]+$"  # TODO fix the regex!!!
+SEARCH_PATTERN = "^2\s[\s0-9\sa-zA-Z_.,-=)(]+$"  # TODO fix the regex!!!
 
 '''
 Class Name: Handler
@@ -28,9 +29,10 @@ class Handler:
     '''
 
     def manage(self):
-
+        # File registration
         if re.match(INSERT_PATTERN, self.data):
             self.set_val.process(self.data)
+        # File search
         if re.match(SEARCH_PATTERN, self.data):
             self.set_val.search(self.data, self.socket)
 
@@ -87,9 +89,10 @@ class Manager:
         else:
             to_search = str(data[2:])
             msg = ""
-            for i in self.dict:
-                if to_search in i:
-                    msg = msg + str(i) + " " + str(self.dict[i]) + " , "
+            # sorts the massages to the client
+            for k in sorted(self.dict.keys()):
+                if to_search in k:
+                    msg = msg + str(k) + " " + str(self.dict[k]) + " , "
 
             socket.send(msg[:len(msg) - 2].encode())
 
@@ -101,21 +104,35 @@ Return Val:
 Info:
 '''
 if __name__ == "__main__":
-    server = socket(AF_INET, SOCK_STREAM)
-    server_ip = "192.168.43.43"
-    server_port = 8000
-    server.bind((server_ip, server_port))
-    server.listen(5)
+    # if there is 4 args- go to the user mode '1'
+    if len(sys.argv) is 4:
+        if sys.argv[1] is not 0:
+            print("Wrong argument- if you want to use, put '1' as the first arg")
+            exit(0)
 
-    while True:
-        client_socket, client_address = server.accept()
-        data = client_socket.recv(1024)
-        set_val = Manager(client_address)
-        while not data == "":
-            handler = Handler(data.decode(), client_socket, set_val)
-            handler.manage()
-            client_socket.send(data.upper())  # to fix
+        server = socket(AF_INET, SOCK_STREAM)
+        server_ip = "192.168.43.43"
+        server_port = 8000
+        server.bind((server_ip, server_port))
+        server.listen(5)
+
+        while True:
+            client_socket, client_address = server.accept()
             data = client_socket.recv(1024)
+            set_val = Manager(client_address)
+            while not data == "":
+                handler = Handler(data.decode(), client_socket, set_val)
+                handler.manage()
+                client_socket.send(data.upper())  # to fix
+                data = client_socket.recv(1024)
 
-        print("Client Disconnected")
-        client_socket.close()
+            print("Client Disconnected")
+            client_socket.close()
+    # if there is 5 args- go to the listening mode '0'
+    if len(sys.argv) is 5:
+        if sys.argv[1] is not 0:
+            print("Wrong argument- if you want to listen, put '0' as the first arg")
+            exit(0)
+    
+    else:
+        print("Problem with args - try again")
