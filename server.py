@@ -1,10 +1,11 @@
+import os
 import socket
 import sys
 from re import search
 from socket import *
 import re
 
-INSERT_PATTERN = "^1\s[\s0-9\s]*\s[a-zA-Z_.,-;]+$"  # TODO fix the regex!!!
+INSERT_PATTERN = "[~a-zA-Z_.,-;]+"  # TODO fix the regex!!!
 SEARCH_PATTERN = "^2\s[\s0-9\sa-zA-Z_.,-=)(]+$"  # TODO fix the regex!!!
 USER_SEARCH = "^\$[\s0-9\sa-zA-Z_.,-=)(]+$"
 CHOOSE_PATTERN = "^\^[\s0-9\sa-zA-Z_.,-=)(]+$"
@@ -87,12 +88,9 @@ class Manager:
     '''
 
     def process(self, data):
-        parse = str(data).split()
-        value = str(self.addr[0]) + " " + parse[1]
-        to_split = data[7:]
-        list_of_keys = str(to_split).split(",")
-        for i in range(len(list_of_keys)):
-            self.set(list_of_keys[i], value)
+        value = str(self.addr)
+        for file in os.listdir("."):
+            self.set(file, value)
 
     '''
     Name: search
@@ -105,15 +103,18 @@ class Manager:
         if self.dict is None:
             print("The word: " + str(data) + " don't exists - there is no such file name ")
         else:
-            # to_search = str(data[2:])
             msg = ""
+            counter = 1
             # sorts the massages to the client
             for k in sorted(self.dict.keys()):
                 if data in k:
-                    msg = msg + str(k) + " " + str(self.dict[k]) + " , "
+                    msg += str(counter) + " " + str(k) + "\n"
+                    counter += 1
+            socket.send(msg[:len(msg) - 1].encode())
 
-            socket.send(msg[:len(msg) - 2].encode())
-
+    def choose(self, data, socket):
+        msg_to_return = self.dict[data]
+        socket.send(str(msg_to_return).encode())
 
 '''
 Name: Main
@@ -122,15 +123,9 @@ Return Val:
 Info:
 '''
 if __name__ == "__main__":
-    '''
-    # if there is 4 args- go to the user mode '1'
-    if len(sys.argv) is 4:
-        if sys.argv[1] is not '1':
-            print("Wrong argument- if you want to use, put '1' as the first arg")
-            exit(0)
-'''
+
     server = socket(AF_INET, SOCK_STREAM)
-    server_ip = "10.0.0.2"
+    server_ip = "172.18.21.23"
     server_port = 8000
     server.bind((server_ip, server_port))
     server.listen(5)
@@ -142,14 +137,3 @@ if __name__ == "__main__":
         handler = Handler(data.decode(), client_socket, set_val)
         handler.manage()
         client_socket.close()
-
-'''
-    # if there is 5 args- go to the listening mode '0'
-    if len(sys.argv) is 5:
-        if sys.argv[1] is not '0':
-            print("Wrong argument- if you want to listen, put '0' as the first arg")
-            exit(0)
-
-    else:
-        print("Problem with args - try again")
-'''
