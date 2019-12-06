@@ -15,7 +15,9 @@ Args type: data, socket, set_val
 Return Val: None
 Info: Handel's Clients data
 '''
-#pinuspunanos
+
+
+# pinuspunanos
 
 class Handler:
     def __init__(self, data, socket, set_val):
@@ -69,6 +71,7 @@ class Manager:
             Manager.__instance = self
             self.dict = {}
             self.addr = client_addr
+            self.indexeddata = {}
 
     '''
     Name: set
@@ -106,15 +109,18 @@ class Manager:
             msg = ""
             counter = 1
             # sorts the massages to the client
+            self.indexeddata = {}
             for k in sorted(self.dict.keys()):
                 if data in k:
+                    self.indexeddata[counter] = k
                     msg += str(counter) + " " + str(k) + "\n"
                     counter += 1
             socket.send(msg[:len(msg) - 1].encode())
 
     def choose(self, data, socket):
-        msg_to_return = self.dict[data]
+        msg_to_return = self.dict[self.indexeddata[data]]
         socket.send(str(msg_to_return).encode())
+
 
 '''
 Name: Main
@@ -125,7 +131,7 @@ Info:
 if __name__ == "__main__":
 
     server = socket(AF_INET, SOCK_STREAM)
-    server_ip = "172.18.21.23"
+    server_ip = "10.0.0.2"
     server_port = 8000
     server.bind((server_ip, server_port))
     server.listen(5)
