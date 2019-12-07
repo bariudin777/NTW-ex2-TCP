@@ -1,3 +1,4 @@
+import json
 import os
 import socket
 import sys
@@ -35,7 +36,7 @@ class Handler:
     def manage(self):
         # File registration
         if re.match(INSERT_PATTERN, self.data):
-            self.set_val.process(self.data)
+            self.set_val.process(self.data[1:])
         # File search
         if re.match(SEARCH_PATTERN, self.data):
             self.set_val.search(self.data[2:], self.socket)
@@ -91,8 +92,9 @@ class Manager:
     '''
 
     def process(self, data):
-        value = str(self.addr)
-        for file in os.listdir("."):
+
+        value = self.addr
+        for file in data.split(','):
             self.set(file, value)
 
     '''
@@ -118,8 +120,12 @@ class Manager:
             socket.send(msg[:len(msg) - 1].encode())
 
     def choose(self, data, socket):
-        msg_to_return = self.dict[self.indexeddata[data]]
-        socket.send(str(msg_to_return).encode())
+        ip_port = self.dict[self.indexeddata[int(data)]]
+        file_name = self.indexeddata[int(data)]
+        res = {"ip_port": ip_port,
+               "fileName": file_name}
+        json_res = json.dumps(res)
+        socket.send(json_res.encode())
 
 
 '''
@@ -139,7 +145,13 @@ if __name__ == "__main__":
     while True:
         client_socket, client_address = server.accept()
         data = client_socket.recv(1024)
-        set_val = Manager.getInstance(client_address)
-        handler = Handler(data.decode(), client_socket, set_val)
+        data = data.decode()
+        if data[0] is '~':
+            list_port = data[1:len(data)].split(",").pop()
+            ip_to_set = (client_address[0], int(list_port))
+        else:
+            ip_to_set = client_address
+        set_val = Manager.getInstance(ip_to_set)
+        handler = Handler(data, client_socket, set_val)
         handler.manage()
         client_socket.close()

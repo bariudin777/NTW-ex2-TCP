@@ -1,31 +1,42 @@
-import socket
+import json
+from socket import *
 import sys
 import os
 
 
-def ready_to_upload(s,ip,port,port_to_listen):
-    listen_ip = ip
-    listen_port = port_to_listen
-    s.bind((listen_ip, listen_port))
-    s.listen(5)
-    client_socket, client_address = s.accept()
-
-
-
-def download(file_name):
+def download(data):
+    json_res = json.loads(data)
+    ip = json_res["ip_port"][0]
+    port = json_res["ip_port"][1]
+    file_name = json_res["fileName"]
+    s = socket(AF_INET, SOCK_STREAM)
+    s.connect((ip, port))
+    s.send(file_name.encode())
+    f = open(file_name, 'wb')
+    load = s.recv(1024)
+    while load:
+        f.write(load)
+        load = s.recv(1024)
+    f.close()
+    s.shutdown(SHUT_RD)
     # open connection with the client how has the file
     # download the file from him,
-    pass
 
 
-def sendtoserver(msg):
-    s.send(msg.encode())  # TODO - why it doesnt send anything?/?
-    data = ""
+def sendtoserver(s, msg):
+    try:
+        s.send(msg.encode())  # TODO - why it doesnt send anything?/?
+        data = ""
+    except:
+        s = socket(AF_INET, SOCK_STREAM)
+        s.connect((dest_ip, dest_port))
+        s.send(msg.encode())
     data = s.recv(4096)
+    s.close()
     return data
 
 
-s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+s = socket(AF_INET, SOCK_STREAM)
 dest_ip = '10.0.0.2'
 dest_port = 8000
 s.connect((dest_ip, dest_port))
@@ -35,14 +46,13 @@ if len(sys.argv) is 4:
     if sys.argv[1] is not '1':
         print("Wrong argument- if you want to use, put '1' as the first arg")
         exit(0)
-    msg = input("Search: ")
-    data = sendtoserver('$' + msg)
-    print(data.decode())
-    msg = input("Choose: ")
-    data = sendtoserver('^' + msg)  # get the from server
-    print(data.decode())
-    file_to_download = s.recv(1024).decode()
-    download(file_to_download)  # connect with the data
+    while True:
+        msg = input("Search: ")
+        data = sendtoserver(s, '$' + msg)
+        print(data.decode())
+        msg = input("Choose: ")
+        data = sendtoserver(s, '^' + msg)  # get the from server
+        download(data.decode())  # connect with the data
 
 
 elif len(sys.argv) is 5:
@@ -53,10 +63,23 @@ elif len(sys.argv) is 5:
     # data = sendtoserver(msg)
     # print(data.decode())
     data = os.listdir(".")
-    s.send((str('~' + str(data)).encode()))
-    #    listen_ip = sys.argv[2]
-    #    listen_port = sys.argv[4]
-    ready_to_upload(s, sys.argv[2], sys.argv[3], sys.argv[4])
+    data.append(sys.argv[4])
+    s.send(('~' + ','.join(data)).encode())
+    s.close()
+    server = socket(AF_INET, SOCK_STREAM)
+    server_ip = sys.argv[2]
+    server_port = int(sys.argv[4])
+    server.bind((server_ip, server_port))
+    server.listen(5)
+    while True:
+        client_socket, client_address = server.accept()
+        file_name = client_socket.recv(1024)
+        f = open(file_name.decode(), 'rb')
+        payload = f.read(1024)
+        while payload:
+            client_socket.sendall(payload)
+            payload = f.read(1024)
+        f.close()
+        server.shutdown(SHUT_WR)
 
 
-s.close()
