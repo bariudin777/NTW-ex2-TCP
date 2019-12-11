@@ -18,8 +18,6 @@ Info: Handel's Clients data
 '''
 
 
-# pinuspunanos
-
 class Handler:
     def __init__(self, data, socket, set_val):
         self.data = data
@@ -105,19 +103,16 @@ class Manager:
     '''
 
     def search(self, data, socket):
-        if self.dict is None:
-            print("The word: " + str(data) + " don't exists - there is no such file name ")
-        else:
-            msg = ""
-            counter = 1
-            # sorts the massages to the client
-            self.indexeddata = {}
-            for k in sorted(self.dict.keys()):
-                if data in k:
-                    self.indexeddata[counter] = k
-                    msg += str(counter) + " " + str(k) + "\n"
-                    counter += 1
-            socket.send(msg[:len(msg) - 1].encode())
+        msg = ""
+        counter = 1
+        # sorts the massages to the client
+        self.indexeddata = {}
+        for k in sorted(self.dict.keys()):
+            if data in k:
+                self.indexeddata[counter] = k
+                msg += str(counter) + " " + str(k) + "\n"
+                counter += 1
+        socket.send(msg[:len(msg) - 1].encode())
 
     def choose(self, data, socket):
         ip_port = self.dict[self.indexeddata[int(data)]]
@@ -137,7 +132,7 @@ Info:
 if __name__ == "__main__":
 
     server = socket(AF_INET, SOCK_STREAM)
-    server_ip = "10.0.0.2"
+    server_ip = "127.0.0.1"
     server_port = 8000
     server.bind((server_ip, server_port))
     server.listen(5)

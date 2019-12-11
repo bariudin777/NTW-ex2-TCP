@@ -4,6 +4,12 @@ import sys
 import os
 
 
+def checkmsg(message):
+    # the input was just space or
+    if not message:
+        return False
+
+
 def download(data):
     json_res = json.loads(data)
     ip = json_res["ip_port"][0]
@@ -15,8 +21,12 @@ def download(data):
     f = open(file_name, 'wb')
     load = s.recv(1024)
     while load:
-        f.write(load)
-        load = s.recv(1024)
+        try:
+            f.write(load)
+            s.settimeout(1)
+            load = s.recv(1024)
+        except(timeout):
+            break
     f.close()
     s.shutdown(SHUT_RD)
     # open connection with the client how has the file
@@ -37,7 +47,7 @@ def sendtoserver(s, msg):
 
 
 s = socket(AF_INET, SOCK_STREAM)
-dest_ip = '10.0.0.2'
+dest_ip = '127.0.0.1'
 dest_port = 8000
 s.connect((dest_ip, dest_port))
 
@@ -48,7 +58,10 @@ if len(sys.argv) is 4:
         exit(0)
     while True:
         msg = input("Search: ")
+        # check if the message is correct
         data = sendtoserver(s, '$' + msg)
+        if checkmsg(data) is False:
+            continue
         print(data.decode())
         msg = input("Choose: ")
         data = sendtoserver(s, '^' + msg)  # get the from server
@@ -73,13 +86,12 @@ elif len(sys.argv) is 5:
     server.listen(5)
     while True:
         client_socket, client_address = server.accept()
-        file_name = client_socket.recv(1024)
-        f = open(file_name.decode(), 'rb')
-        payload = f.read(1024)
+        file_name = client_socket.recv(1024).decode()
+        f = open(file_name, 'rb')
+        f.seek(0)
+        payload = f.read(-1)
         while payload:
             client_socket.sendall(payload)
             payload = f.read(1024)
         f.close()
         server.shutdown(SHUT_WR)
-
-
