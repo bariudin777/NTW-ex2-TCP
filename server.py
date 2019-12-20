@@ -3,7 +3,7 @@ import sys
 from socket import *
 import re
 
-INSERT_PATTERN = "[~a-zA-Z_.,-;]+" 
+INSERT_PATTERN = "[~a-zA-Z_.,-;]+"
 SEARCH_PATTERN = "^2\s[\s0-9\sa-zA-Z_.,-=)(]+$"
 USER_SEARCH = "^\$[\s0-9\sa-zA-Z_.,-=)(]+$"
 CHOOSE_PATTERN = "^\^[\s0-9\sa-zA-Z_.,-=)(]+$"
