@@ -3,13 +3,25 @@ from socket import *
 import sys
 import os
 
+'''
+Name: checkmsg
+Args type: message
+Return Val: boolean
+Info: check whether the message if empty or not 
+'''
+# def checkmsg(message):
+#     # the input was just space or
+#     if not message:
+#         return False
 
-def checkmsg(message):
-    # the input was just space or
-    if not message:
-        return False
-
-
+'''
+Name: download
+Args type: data
+Return Val: None
+Info: connects to the client that have the file with IP and PORT number that is saved in a dictionary,
+      open a new file and start receiving data
+      from the socket until all the bytes copied 
+'''
 def download(data):
     json_res = json.loads(data)
     ip = json_res["ip_port"][0]
@@ -33,6 +45,16 @@ def download(data):
     # download the file from him,
 
 
+'''
+Name: sendto server
+Args type: socket, msg
+Return Val: None
+Info: send to server a message with special prefix so the server will know which function to get into.
+      $msg means: the server will analyze this string as search pattern and return all the names of files 
+                  containing this msg 
+      ^msg means: the server will analyze this string as choose pattern and return all the names of files 
+                  containing this msg   
+'''
 def sendtoserver(s, msg):
     try:
         s.send(msg.encode())  # TODO - why it doesnt send anything?/?
@@ -47,8 +69,8 @@ def sendtoserver(s, msg):
 
 
 s = socket(AF_INET, SOCK_STREAM)
-dest_ip = '127.0.0.1'
-dest_port = 8000
+dest_ip = sys.argv[2]
+dest_port = int(sys.argv[3])
 s.connect((dest_ip, dest_port))
 
 # if there is 4 args- go to the user mode '1'
@@ -60,12 +82,24 @@ if len(sys.argv) is 4:
         msg = input("Search: ")
         # check if the message is correct
         data = sendtoserver(s, '$' + msg)
-        if checkmsg(data) is False:
-            continue
+        # if checkmsg(data) is False:
+        #     continue
         print(data.decode())
         msg = input("Choose: ")
-        data = sendtoserver(s, '^' + msg)  # get the from server
-        download(data.decode())  # connect with the data
+        # check if input is in valid
+        for line in data.splitlines():
+            if msg is "":
+                continue
+            if line.startswith(bytes(msg.encode())):
+                data = sendtoserver(s, '^' + msg)
+                download(data.decode())
+                continue
+
+            if not line:  # if line is empty end of data
+                print("invalid input")
+
+
+
 
 
 elif len(sys.argv) is 5:

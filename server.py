@@ -1,15 +1,14 @@
 import json
-import os
-import socket
 import sys
-from re import search
 from socket import *
 import re
 
-INSERT_PATTERN = "[~a-zA-Z_.,-;]+"  # TODO fix the regex!!!
-SEARCH_PATTERN = "^2\s[\s0-9\sa-zA-Z_.,-=)(]+$"  # TODO fix the regex!!!
+INSERT_PATTERN = "[~a-zA-Z_.,-;]+" 
+SEARCH_PATTERN = "^2\s[\s0-9\sa-zA-Z_.,-=)(]+$"
 USER_SEARCH = "^\$[\s0-9\sa-zA-Z_.,-=)(]+$"
 CHOOSE_PATTERN = "^\^[\s0-9\sa-zA-Z_.,-=)(]+$"
+
+
 '''
 Class Name: Handler
 Args type: data, socket, set_val
@@ -123,6 +122,8 @@ class Manager:
         socket.send(json_res.encode())
 
 
+
+
 '''
 Name: Main
 Args type:
@@ -132,8 +133,8 @@ Info:
 if __name__ == "__main__":
 
     server = socket(AF_INET, SOCK_STREAM)
-    server_ip = "127.0.0.1"
-    server_port = 8000
+    server_ip = '127.0.0.1'
+    server_port = int(sys.argv[1])
     server.bind((server_ip, server_port))
     server.listen(5)
 
